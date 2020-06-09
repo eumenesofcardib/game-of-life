@@ -93,9 +93,7 @@ impl Universe {
 	let size = (width * height) as usize;
 	let mut cells = FixedBitSet::with_capacity(size);
 
-	for i in 0..size {
-	    cells.set(i, js_sys::Math::random() < 0.5);
-	}
+	cells.clear();
 
 	Universe {
 	    width,
@@ -127,6 +125,22 @@ impl Universe {
 
     pub fn set_height(&mut self, height: u32) {
 	self.height = height;
+	self.cells.clear();
+    }
+
+    pub fn toggle_cell(&mut self, row: u32, column: u32) {
+	let idx = self.get_index(row, column);
+	self.cells.toggle(idx);
+    }
+
+    pub fn randomize(&mut self) {
+	let size = (self.width * self. height) as usize;
+	for i in 0..size {
+	    self.cells.set(i, js_sys::Math::random() < 0.5);
+	}
+    }
+
+    pub fn clear(&mut self) {
 	self.cells.clear();
     }
 }
