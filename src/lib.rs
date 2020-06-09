@@ -5,6 +5,16 @@ extern crate js_sys;
 extern crate fixedbitset;
 use fixedbitset::FixedBitSet;
 
+/*
+extern crate web_sys;
+
+macro_rules! log {
+    ( $( $t:tt )* ) => {
+	web_sys::console::log_1(&format!( $( $t )* ).into());
+    }
+}
+*/
+
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
 #[cfg(feature = "wee_alloc")]
@@ -53,6 +63,8 @@ impl Universe {
 		let idx = self.get_index(row, col);
 		let cell = self.cells[idx];
 		let live_neighbors = self.live_neighbor_count(row, col);
+
+//		log!("cell[{}, {}] is initially {:?} and has {} live neighbors", row, col, cell, live_neighbors);
 		
 		next.set(idx, match (cell, live_neighbors) {
 		    (true, x) if x < 2 => false,
@@ -61,6 +73,10 @@ impl Universe {
 		    (false, 3) => true,
 		    (otherwise, _) => otherwise,
 		});
+
+//		if !next[idx] == self.cells[idx] {
+//		    log!("cell[{}, {}] is initially {:?} and has {} live neighbors and transitions to {}", row, col, cell, live_neighbors, next[idx]);
+//		}
 		
 	    }
 	}
@@ -69,6 +85,8 @@ impl Universe {
     }
 
     pub fn new() -> Universe {
+	utils::set_panic_hook();
+
 	let width = 128;
 	let height = 128;
 
@@ -101,7 +119,32 @@ impl Universe {
     pub fn cells(&self) -> *const u32 {
 	self.cells.as_slice().as_ptr()
     }
+
+    pub fn set_width(&mut self, width: u32) {
+	self.width = width;
+	self.cells.clear();
+    }
+
+    pub fn set_height(&mut self, height: u32) {
+	self.height = height;
+	self.cells.clear();
+    }
 }
+
+// not for the eyes of javascript
+impl Universe {
+    pub fn get_cells(&self) -> &[u32] {
+	&self.cells.as_slice()
+    }
+
+    pub fn set_cells(&mut self, cells: &[(u32, u32)]) {
+	for (row, col) in cells.iter().cloned() {
+	    let idx = self.get_index(row, col);
+	    self.cells.set(idx, true);
+	}
+    }
+}
+
 
 /*
 use std::fmt;
